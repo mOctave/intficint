@@ -1,0 +1,27 @@
+sumatra 1
+# Loading defaults.yaml loads ALL the default libraries for Sumatra 1.
+
+--extends--
+default-commands.sumatra # All the standard commands
+default-exits.sumatra # The standard 12 IF exit types
+default-player.sumatra # The standard player
+default-start.sumatra # Hooks activated when the game begins
+default-statusline.sumatra # The default status line. Load this AFTER default-start
+--end--
+
+--global--
+# Default error messages
+err_thingnotfound: You can't see any such thing.
+err_invalidcommand: I do not understand what you're saying.
+err_noexit: You can't go that way.
+err_thingnotheld: You're not carrying that.
+err_pickupself: You can't pick yourself up.
+err_pickupfixed: That's fixed in place.
+err_locked: That's locked.
+err_unopenable: You can't open that!
+err_wrongkey: That doesn't fit the lock.
+err_notunlockable: You can't unlock that.
+
+# Default flavour text
+flav_dark: It's pitch black and you can't see a thing.
+--end--

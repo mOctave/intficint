@@ -1,0 +1,12 @@
+# Don't publish save files for everyone to see
+saves/*
+
+# Don't ignore the .gitkeep in the saves folder
+!.gitkeep
+
+# Don't publish locally-compiled java class files and JARs
+intficint.jar
+*.class
+
+# Ignore .DS_Store files
+.DS_Store

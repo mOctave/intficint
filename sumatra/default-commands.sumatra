@@ -1,0 +1,347 @@
+sumatra 1
+# Commands that allow the player to interact with the world around them
+
+--extends--
+library-lists.sumatra
+--end--
+
+--hook--
+# Command to print the description of the player's current location.
+trigger: cmd
+name: look
+command: look
+command: l
+command: examine
+command: x
+execute: default_look
+--end--
+
+--hook--
+# Command to print the ansi colour table.
+trigger: cmd
+name: ansi
+command: ansi
+execute: default_ansi_colourtable
+--end--
+
+--hook--
+# Command to quit the game.
+trigger: cmd
+name: quit
+command: quit
+command: q
+execute: default_quit
+--end--
+
+--hook--
+# Command to get the description of an object.
+trigger: cmd
+name: examine
+command: look «obj»
+command: look at «obj»
+command: l «obj»
+command: check out «obj»
+command: check «obj» out
+command: examine «obj»
+command: x «obj»
+execute: default_examine $obj
+--end--
+
+--hook--
+# Command to check inventory.
+trigger: cmd
+name: inventory
+command: inventory
+command: take inventory
+command: inv
+command: i
+execute: default_take_inventory
+--end--
+
+--hook--
+# Command to pick up something.
+trigger: cmd
+name: pickup
+command: take «obj»
+command: pick up «obj»
+command: get «obj»
+command: snag «obj»
+command: steal «obj»
+command: t «obj»
+execute: default_pickup $obj
+--end--
+
+--hook--
+# Command to drop something.
+trigger: cmd
+name: drop
+command: drop «obj»
+command: put down «obj»
+command: discard «obj»
+command: throw «obj»
+command: jettison «obj»
+command: put «obj» down
+command: put «obj»
+execute: default_drop $obj
+--end--
+
+--hook--
+# Command to wait.
+trigger: cmd
+name: wait
+command: wait
+command: z
+command: dally
+command: stay
+command: waste time
+execute: default_wait
+--end--
+
+--hook--
+# Command to open a door or container.
+trigger: cmd
+name: open
+command: open «obj»
+execute: default_open $obj
+--end--
+
+--hook--
+# Command to unlock a door or container.
+trigger: cmd
+name: unlock
+command: unlock «obj»
+execute: default_unlock $obj $obj
+--end--
+
+--hook--
+# Command to go in a direction.
+trigger: cmd
+name: go
+command: go «dir»
+command: walk «dir»
+command: run «dir»
+command: «dir»
+command: head «dir»
+execute: default_go $dir
+--end--
+
+--methodcode--
+METHOD DEFAULT_LOOK 0 0
+ATTACH player : location
+IF player : location : lit == false THEN DEFAULT_LOOK:DARK
+SAY «bold on»«underline on»‡ player : location : name ¶«»
+SAY player : location : desc
+
+LABEL DEFAULT_LOOK:CONTENTS
+EXECUTE LIST_HUMAN_READABLE ( player : location : contents )
+SAY You can see $r1 here.
+DETACH
+RETURN
+
+LABEL DEFAULT_LOOK:DARK
+SAY «bold on»«underline on»Darkness«»
+SAY @flav_dark
+DETACH
+RETURN
+
+METHOD DEFAULT_ANSI_COLOURTABLE 0 0
+say «red letters»R «yellow letters»Y «green letters»G «cyan letters»C «blue letters»B «purple letters»P «black letters»K «white letters»W «default letters» D «»
+say «bright red letters»r «bright yellow letters»y «bright green letters»g «bright cyan letters»c «bright blue letters»b «bright purple letters»p «bright black letters»k «bright white letters»w «»
+say «red background»R «yellow background»Y «green background»G «cyan background»C «blue background»B «purple background»P «black background»K «white background»W «default background» D «»
+say «bright red background»r «bright yellow background»y «bright green background»g «bright cyan background»c «bright blue background»b «bright purple background»p «bright black background»k «bright white background»w «»
+say «bold on»1 «bold off»«dim on»2 «bold off»«italic on»3 «italic off»«underline on»4 «underline off»«blinking on»5«blinking off»«hidden on»7 «hidden off»«inverse on»8 «inverse off»«strikethrough on»9 «strikethrough off»
+RETURN
+
+METHOD DEFAULT_QUIT 0 0
+SAY " Type Y or YES to quit, type anything else to cancel. "
+LOCAL response FORMAT «U( INPUT )»
+IF $response == Y || $response == YES THEN DEFAULT_QUIT:OUT
+SAY " Back to safety, then. "
+RETURN
+LABEL DEFAULT_QUIT:OUT
+EXIT
+RETURN
+
+METHOD DEFAULT_EXAMINE 1 0
+CATCH DEFAULT_EXAMINE:NOTHERE
+LOCAL ? $1 : name
+ENDCATCH
+IF ( player : location !== $1 : location ) && ( player : name !== $1 : location ) THEN DEFAULT_EXAMINE:NOTHERE
+ATTACH $1
+SAY $1 : desc
+DETACH
+RETURN
+
+LABEL DEFAULT_EXAMINE:NOTHERE
+ENDCATCH
+SAY @err_thingnotfound
+RETURN
+
+METHOD DEFAULT_GO 1 0
+CATCH DEFAULT_GO:NOTANEXIT
+LOCAL ? $1 : name
+ENDCATCH
+IF player : location : ( exit‡ $1 : name ) == " «null value» " THEN DEFAULT_GO:NOEXIT
+IF player : location : ( exit‡ $1 : name ) : door == true THEN DEFAULT_GO:DOOR
+SET player location player : location : ( exit‡ $1 : name )
+EXECUTE DEFAULT_LOOK
+RETURN
+
+LABEL DEFAULT_GO:NOTANEXIT
+ENDCATCH
+SAY @err_invalidcommand
+RETURN
+
+LABEL DEFAULT_GO:NOEXIT
+SAY @err_noexit
+RETURN
+
+LABEL DEFAULT_GO:DOOR
+LOCAL loc player : location
+SET player location player : location : ( exit‡ $1 : name )
+IF player : location : closed !== true THEN DEFAULT_GO:DOOR_OPEN
+SAY First opening player : location ¶...
+EXECUTE DEFAULT_OPEN ( player : location )
+IF $r1 == true THEN DEFAULT_GO:DOOR_OPEN
+SET player location $loc
+RETURN
+
+LABEL DEFAULT_GO:DOOR_OPEN
+SET player location player : location : ( exit‡ $1 : name )
+EXECUTE DEFAULT_LOOK
+RETURN
+
+METHOD DEFAULT_TAKE_INVENTORY 0 0
+LOCAL i -1
+LOCAL contents player : contents
+EXECUTE LIST_LENGTH $contents
+LOCAL len $r1
+IF $len = 0 THEN DEFAULT_TAKE_INVENTORY:NOTHINGHELD
+SAY " You are carrying: "
+
+LABEL DEFAULT_TAKE_INVENTORY:LOOPTOP
+LOCAL i $i + 1
+EXECUTE LIST_ENTRY $contents $i
+SAY " -§ " $r1
+IF $i = $len - 1 THEN DEFAULT_TAKE_INVENTORY:DONE
+SKIPTO DEFAULT_TAKE_INVENTORY:LOOPTOP
+
+LABEL DEFAULT_TAKE_INVENTORY:DONE
+RETURN
+
+LABEL DEFAULT_TAKE_INVENTORY:NOTHINGHELD
+SAY " You are carrying nothing. "
+RETURN
+
+METHOD DEFAULT_PICKUP 1 0
+CATCH DEFAULT_PICKUP:NOTHERE
+LOCAL ? $1 : name
+ENDCATCH
+IF player : location !== $1 : location THEN DEFAULT_PICKUP:NOTHERE
+IF $1 : name == player : name THEN DEFAULT_PICKUP:SELF
+IF $1 : fixed == true THEN DEFAULT_PICKUP:FIXED
+SAY " Taken. "
+SET $1 location player : name
+RETURN
+
+LABEL DEFAULT_PICKUP:NOTHERE
+SAY @err_thingnotfound
+RETURN
+
+LABEL DEFAULT_PICKUP:SELF
+SAY @err_pickupself
+RETURN
+
+LABEL DEFAULT_PICKUP:FIXED
+SAY @err_pickupfixed
+RETURN
+
+METHOD DEFAULT_DROP 1 0
+CATCH DEFAULT_DROP:NOTHERE
+LOCAL ? $1 : name
+ENDCATCH
+IF player : name !== $1 : location THEN DEFAULT_DROP:NOTCARRIED
+SAY " Dropped. "
+SET $1 location player : location
+RETURN
+
+LABEL DEFAULT_DROP:NOTHERE
+SAY @err_thingnotfound
+RETURN
+
+LABEL DEFAULT_DROP:NOTCARRIED
+IF player : location !== $1 : location THEN DEFAULT_DROP:NOTHERE
+SAY @err_thingnotheld
+RETURN
+
+METHOD DEFAULT_WAIT 0 0
+SAY " Time passes. "
+RETURN
+
+METHOD DEFAULT_OPEN 1 1
+CATCH DEFAULT_OPEN:NOTHERE
+LOCAL ? $1 : name
+ENDCATCH
+IF ( player : location !== $1 : location ) && ( player : location !== $1 : name ) THEN DEFAULT_OPEN:NOTHERE
+IF ( $1 : door !== true ) && ( $1 : container !== true ) THEN DEFAULT_OPEN:UNOPENABLE
+IF $1 : closed !== true THEN DEFAULT_OPEN:ALREADYOPEN
+IF $1 : locked == true THEN DEFAULT_OPEN:LOCKED
+SAY " You open " $1
+SET $1 closed false
+RETURN true
+
+LABEL DEFAULT_OPEN:NOTHERE
+SAY @err_thingnotfound
+RETURN false
+
+LABEL DEFAULT_OPEN:UNOPENABLE
+SAY @err_unopenable
+RETURN false
+
+LABEL DEFAULT_OPEN:ALREADYOPEN
+SAY $1 " is already open. "
+SET $1 closed false
+RETURN true
+
+LABEL DEFAULT_OPEN:LOCKED
+SAY @err_locked
+RETURN false
+
+METHOD DEFAULT_UNLOCK 2 1
+SAY Unlocking...
+CATCH DEFAULT_UNLOCK:LOCKNOTHERE
+LOCAL ? $1 : name
+CATCH DEFAULT_UNLOCK:KEYNOTHERE
+LOCAL ? $2 : name
+ENDCATCH
+IF ( player : location !== $1 : location ) && ( player : location !== $1 : name ) THEN DEFAULT_UNLOCK:LOCKNOTHERE
+IF ( player : location !== $2 : location ) && ( $2 : location !== player : name ) THEN DEFAULT_UNLOCK:KEYNOTHERE
+IF $1 : locked !== true THEN DEFAULT_UNLOCK:ALREADYUNLOCKED
+CATCH DEFAULT_UNLOCK:NOTUNLOCKABLE
+IF ( $1 : key ) !== $2 : name THEN DEFAULT_UNLOCK:NOFIT
+ENDCATCH
+SET $1 locked false
+SAY You unlock $1 ¶.
+RETURN true
+
+LABEL DEFAULT_UNLOCK:LOCKNOTHERE
+SAY You can't see $1 here.
+RETURN false
+
+LABEL DEFAULT_UNLOCK:KEYNOTHERE
+SAY You can't see $2 here.
+RETURN false
+
+LABEL DEFAULT_UNLOCK:ALREADYUNLOCKED
+SAY $1 " is already unlocked. "
+RETURN true
+
+LABEL DEFAULT_UNLOCK:NOFIT
+SAY @err_wrongkey
+RETURN false
+
+LABEL DEFAULT_UNLOCK:NOTUNLOCKABLE
+SAY @err_notunlockable
+RETURN false
+
+--end--

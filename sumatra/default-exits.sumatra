@@ -1,0 +1,65 @@
+sumatra 1
+# All twelve of the standard types of exit in interactive fiction
+
+--exit--
+name: north
+alias: n
+--end--
+
+--exit--
+name: east
+alias: e
+--end--
+
+--exit--
+name: south
+alias: s
+--end--
+
+--exit--
+name: west
+alias: w
+--end--
+
+--exit--
+name: northeast
+alias: ne
+--end--
+
+--exit--
+name: southeast
+alias: se
+--end--
+
+--exit--
+name: southwest
+alias: sw
+--end--
+
+--exit--
+name: northwest
+alias: nw
+--end--
+
+--exit--
+name: up
+alias: u
+--end--
+
+--exit--
+name: down
+alias: d
+--end--
+
+--exit--
+name: inside
+alias: in
+alias: enter
+--end--
+
+--exit--
+name: outside
+alias: out
+alias: leave
+alias: exit
+--end--

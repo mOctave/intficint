@@ -1,0 +1,9 @@
+sumatra 1
+# Hooks to do basic tasks when the game starts.
+
+--hook--
+trigger: event
+name: initial_look
+command: start
+execute: default_look
+--end--

@@ -1,0 +1,29 @@
+sumatra 1
+# Some code to display a status line at the top of the screen after every command
+
+--hook--
+trigger: event
+name: status_line_start
+command: start
+execute: status_line_post
+
+trigger: event
+name: status_line_post
+command: post
+execute: status_line_post
+--end--
+
+--global--
+# Initiate the status line
+status_line_left: (Left)
+status_line_right: (Right)
+--end--
+
+--methodcode--
+METHOD STATUS_LINE_POST 0 0
+LOCAL len FORMAT «ansi»[‡ INT ( 2 + ( ¬ @status_line_right ) ) ¶D
+# Go to home position, move down one line, erase line, print the status line
+SAY «ansi»[H«ansi»[1B«bright black background»«ansi»[K«bold on»«bright white letters» @status_line_left «ansi»[5000C $len @status_line_right «ansi»[H«»«ansi»[5000B
+SAY «ansi»[2A
+RETURN
+--end--

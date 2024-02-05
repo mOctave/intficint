@@ -1,0 +1,44 @@
+name: Check
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
+
+jobs:
+  changed:
+    name: Changed
+    uses: ./.github/workflows/changes.yaml
+
+  spellcheck:
+    name: Spelling
+    needs: changed
+    if: ${{ needs.changed.outputs.documentation == 'true' || needs.changed.outputs.workflows == 'true' }}
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        show-progress: false
+    - uses: codespell-project/actions-codespell@v2
+      with:
+        path: ./extras/intficint/*.md
+        exclude_file: .codespell_exclude
+        ignore_words_file: .codespell_ignored_words
+  stylecheck:
+    name: Code Style
+    needs: changed
+    if: ${{ needs.changed.outputs.source_code == 'true' || needs.changed.outputs.workflows == 'true'  || needs.changed.outputs.tests == 'true' }}
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        show-progress: false
+    - uses: actions/setup-python@v5
+      with:
+        python-version: '3.10'
+    - name: Run style check
+      run: python ./extras/intficint/tests/code_style.py './extras/intficint/src/'

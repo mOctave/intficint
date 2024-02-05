@@ -1,0 +1,199 @@
+sumatra 1 # Interpreter name and version comes first, not in a block.
+
+# Here is a complete example file to demonstrate the basics of this
+# Interactive Fiction interpreter.
+
+# Imports and relied-upon libraries go here, usually at least the defaults
+--extends--
+defaults.sumatra # In most situations, you'll want to load the defaults.
+thisfiledoesnotexist.sumatra # Files that don't exist will throw a warning.
+circdep.sumatra
+--end--
+
+# All settings go here. Every setting used should be defined. The config
+# section should be the first in the file, immediately following any headings.
+--config--
+
+# Some metadata for the program
+# What is the name of this program?
+name: Sumatra Code Example
+# What is the author's name?
+author: mOctave
+# What is the version number?
+version: 1.0 (1)
+# What copyright information should be provided?
+copyright: Copyright © 2023 mOctave. This work is licensed under CC BY-SA 4.0. To view a copy of this license, visit http://creativecommons.org/licenses/by-sa/4.0/.
+
+# Some general config options
+printerrormessages: true
+--end--
+
+--global--
+err_invalidcommand: Huh?
+--end--
+
+# The player can only be defined once. Any redefinitions will overwrite the
+# existing player's data. If the defaults are in use, all you have to do is
+# define the player's starting location.
+--player--
+location: Open Field
+--end--
+
+# Here is an example thing. 
+--thing--
+name: Oboe
+desc: «A(0)», «A(2)», or «A(1)» (or «a(0)» again), "Lit" is «C(lit)», worth «C(score)» points.
+alias: Musical Instrument
+alias: Weapon of Head Destruction
+alias: Off-By-One-Error
+location: Band Room
+# Custom attributes can be defined with any non-standard key
+family: Woodwind
+lit: false # All attributes are treated as strings. Special 
+container: false
+score: 3
+--end--
+
+Text outside blocks is ignored.
+
+--thing--
+name: Elephant
+desc: Wait! This one isn't an instrument!
+name: African Elephant # Some keys overwrite previous ones
+alias: Elephant
+alias: Big Animal
+location: Band Room
+# More Attributes
+family: Elephantidae
+lit: false
+container: true
+score: 4
+Text inside blocks throws a warning if it's not a key-value pair
+--and you can't nest blocks--
+--you also can't have attributes: that start with double hyphens
+--end--
+
+
+# Rooms hold things and are connected to each other via exits
+--room--
+name: Band Room
+desc: It can get very noisy in here.
+alias: Rooms can have aliases, too.
+# Exits are defined by a key starting with an arrow (->). The arrow is left out
+# in the exit name
+-> east: Open Field
+-> south: Band Room # Recursive exits work, too!
+# Rooms can have custom attributes, just like things.
+lit: true
+score: 17
+--end--
+
+--room--
+name: Open Field
+# Be sure to define exits going in both directions, unless you want the player
+# to be stranded in a room with no way back!
+-> west: Band Room
+-> down: Shadow of Death
+-> east: Citadel Gate
+score: 1
+--end--
+
+--room--
+name: Shadow of Death
+desc: This will never actually show up.
+-> up: Open Field
+# Some keys have special functions.
+lit: false
+score: -3
+--end--
+
+--room--
+name: Citadel
+-> west: Citadel Gate
+--end--
+
+--room--
+name: Citadel Gate
+-> west: Open Field
+-> east: Citadel
+# Doors are a special kind of room that connect two rooms. Every exit that leads
+# to a door should be matched by an exit leading out of that door. Doors can be
+# closed and locked.
+door: true
+closed: true
+locked: true
+key: Oboe
+--end--
+
+# You can define methods using Sumatra Methodcode (see methodcode.md for details)
+--methodcode--
+LABEL START
+
+# Methods should be spaced out to make it obvious where they start and end.
+METHOD MY_SINGLE-WORD_METHOD_NAME_HERE 1 0
+IF $1 THEN MSWMNH-YES ELSE MSWMNH-NO
+LABEL MSWMNH-YES # All labels must be unique: prefix with the method name if possible
+SAY The answer is yes!
+SKIPTO MSWMNH-END
+LABEL MSWMNH-NO
+SAY The answer is no...
+LABEL MSWMNH-END
+SAY Well, now you have your answer!
+RETURN
+
+METHOD ANOTHERMETHOD 17 158609 # There's really not much of a limit here...
+EXECUTE MY_SINGLE-WORD_METHOD_NAME_HERE $14
+RETURN # ALWAYS return.
+
+LABEL TESTALL
+SAY ------
+EXECUTE TESTS
+SAY ------
+
+# Extra stuff for testing.
+METHOD TESTS 0 0
+LET global Hello World
+LET math 1 * 2 + 3 / 4 ^ 5 - 6 * ( 8 % 7 ) # Should equal approximately -3.997
+LOCAL parentest ( 1 + ( 2 ^ 3 ) - 4 ) / ( ( 5 * 6 ) % 7 - 8 ) # Should equal approximately -0.833
+LOCAL local Hello Continent
+LET mixed_global_local @MATH + $parenTest # Case doesn't matter
+PRINT Enter two numbers to get the result!
+PRINT " Enter first addend "
+CPRMPT FORMAT " «blue letters»First addend («green letters»a«blue letters») «bright purple letters»> «» "
+LOCAL a INPUT # User input!
+CPRMPT FORMAT " «blue letters»Second addend («green letters»b«blue letters») «bright purple letters»> «» "
+LOCAL b INPUT
+SAY «bright red letters» $a +§ $b =§ $a + $b «»
+IF $a = $b THEN X ELSE Y
+PRINT This whole line should be skipped.
+LABEL X
+PRINT Ignore the next line being skipped.
+SKIPTO Z
+LABEL Y
+PRINT " a != b "
+LABEL Z
+WARN You can include your own warnings. They can have math INT 1 + 1
+PRINT 7 divided by 3 equals INT 7 / 3 remainder INT 7 % 3
+EXECUTE MY_SINGLE-WORD_METHOD_NAME_HERE true
+SAY Your name is me : name ¶!
+SET yourself name " Some unknown person "
+SAY Your name is now me : name ¶!
+LET hw " Hello world "
+SAY @hw ¢§ 3 is ( @hw ¢ 3 )
+SAY @hw ~§ -5 is ( @hw ~ -5 )
+LET ls " [`Item 1`,`second`,`C`,`final one here`] "
+EXECUTE LIST_LENGTH @ls
+SAY $r1
+EXECUTE LIST_ENTRY @ls 0
+SAY $r1
+EXECUTE LIST_ENTRY @ls 1
+SAY $r1
+EXECUTE LIST_ENTRY @ls 2
+SAY $r1
+EXECUTE LIST_ENTRY @ls 3
+SAY $r1
+EXECUTE LIST_HUMAN_READABLE @ls
+SAY $r1
+ATTACH player
+SAY Your name is «N». Your first alias is «A(0)». Your description is that you are «d» --- Location: «L». 
+--end--

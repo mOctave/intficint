@@ -1,0 +1,12 @@
+sumatra 1
+# The standard player data.
+
+--player--
+name: yourself
+alias: you
+alias: me
+alias: myself
+alias: self
+alias: player
+desc: As good looking as ever.
+--end--

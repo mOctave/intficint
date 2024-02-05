@@ -1,0 +1,14 @@
+source_code:
+  - 'extras/intficint/src/*.java'
+tests:
+  - 'extras/intficint/tests/*.java'
+  - 'extras/intficint/tests/*.py'
+workflows:
+  - '.github/workflows/**'
+example:
+  - 'extras/intficint/example.sumatra'
+libraries:
+  - 'extras/intficint/sumatra/*.sumatra'
+documentation:
+  - 'extras/intficint/*.md'
+  - 'extras/intficint/**/*.md'

@@ -1,0 +1,28 @@
+sumatra 1
+# The status line in use 
+
+--hook--
+trigger: event
+name: status_line_init
+command: start
+execute: status_line_update
+
+trigger: event
+name: status_line_update
+command: post
+execute: status_line_update
+--end--
+
+--methodcode--
+METHOD STATUS_LINE_UPDATE 0 0
+IF player : location : lit == false THEN STATUS_LINE_UPDATE:DARK
+LET status_line_left player : location
+LET status_line_right Hello world
+RETURN
+LABEL STATUS_LINE_UPDATE:DARK
+LET status_line_left Darkness
+--end--
+
+--extends--
+library-statusline.sumatra
+--end--

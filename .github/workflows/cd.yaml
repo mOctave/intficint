@@ -1,0 +1,64 @@
+name: Continuous Deployment
+on:
+  push:
+    branches:
+      - main
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
+
+jobs:
+  changed:
+    name: Changed
+    uses: ./.github/workflows/changes.yaml
+
+  release:
+    name: Release
+    needs: changed
+    if: ${{ needs.changed.outputs.source_code == 'true' || needs.changed.outputs.example == 'true'  || needs.changed.outputs.libraries == 'true' || needs.changed.outputs.documentation == 'true' }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        show-progress: false
+    - name: Get short hash of latest commit
+      id: hash
+      run: echo "sha_short=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
+    - uses: actions/setup-java@v4
+      with:
+        java-version: 21
+        distribution: oracle
+        overwrite-settings: false
+        settings-path: ${{ github.workspace }}
+    - name: Compile everything into a JAR
+      run: |
+        cd ./extras
+        javac intficint/src/*.java
+        jar -v -f intficint/intficint.jar -e intficint.src.Main -c intficint/src/*.class
+    - name: Gather all artifacts into one directory
+      run : |
+        mkdir intficint-${{ steps.hash.outputs.sha_short }}
+        mv extras/intficint/sumatra intficint-${{ steps.hash.outputs.sha_short }}/
+        mv extras/intficint/*.md intficint-${{ steps.hash.outputs.sha_short }}/
+        mv extras/intficint/saves intficint-${{ steps.hash.outputs.sha_short }}/
+        mv extras/intficint/example.sumatra intficint-${{ steps.hash.outputs.sha_short }}/
+        mv extras/intficint/intficint.jar intficint-${{ steps.hash.outputs.sha_short }}/
+    - uses: montudor/action-zip@v1
+      with:
+        args: zip -qq -r ./intficint-${{ steps.hash.outputs.sha_short }}.zip ./intficint-${{ steps.hash.outputs.sha_short }}
+    - uses: dev-drprasad/delete-tag-and-release@v1.0
+      with:
+        tag_name: continuous
+        github_token: ${{ secrets.PAT_2024 }}
+    - uses: ncipollo/release-action@v1
+      with:
+        artifactErrorsFailBuild: true
+        artifacts: ./intficint-${{ steps.hash.outputs.sha_short }}.zip
+        body: This is a continuous release built from source. It may corrupt your save file, crash your computer, call you Dave, or petulantly refuse to launch at all. It is 95% guaranteed to eat your kitten if said kitten gets within 50 feet of your computer. The based way to use this release is to get a can of insecticide ready and get several hundred pages on which to list the errors you find. Unfortunately, we are currently unable to provide either due to your device lacking teleport capabilities.
+        makeLatest: true
+        name: Continuous
+        prerelease: true
+        tag: continuous
