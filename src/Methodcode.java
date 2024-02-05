@@ -1,4 +1,4 @@
-package intficint.src;
+package src;
 
 import java.lang.reflect.Array;
 import java.lang.Math;

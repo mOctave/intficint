@@ -36,7 +36,7 @@ jobs:
     - name: Compile everything into a JAR
       run: |
         javac src/*.java
-        jar -v -f intficint.jar -e intficint.src.Main -c src/*.class
+        jar -v -f intficint.jar -e src.Main -c src/*.class
     - name: Gather all artifacts into one directory
       run : |
         mkdir intficint-${{ steps.hash.outputs.sha_short }}

@@ -1,4 +1,4 @@
-import intficint.src.Constants;
+import src.Constants;
 
 import java.io.File;
 import java.io.FileNotFoundException;

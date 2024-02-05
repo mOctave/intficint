@@ -1,4 +1,4 @@
-package intficint.src;
+package src;
 
 import java.sql.Timestamp;
 import java.io.ByteArrayOutputStream;
