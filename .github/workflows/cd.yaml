@@ -35,17 +35,16 @@ jobs:
         settings-path: ${{ github.workspace }}
     - name: Compile everything into a JAR
       run: |
-        cd ./extras
-        javac intficint/src/*.java
-        jar -v -f intficint/intficint.jar -e intficint.src.Main -c intficint/src/*.class
+        javac src/*.java
+        jar -v -f intficint.jar -e intficint.src.Main -c src/*.class
     - name: Gather all artifacts into one directory
       run : |
         mkdir intficint-${{ steps.hash.outputs.sha_short }}
-        mv extras/intficint/sumatra intficint-${{ steps.hash.outputs.sha_short }}/
-        mv extras/intficint/*.md intficint-${{ steps.hash.outputs.sha_short }}/
-        mv extras/intficint/saves intficint-${{ steps.hash.outputs.sha_short }}/
-        mv extras/intficint/example.sumatra intficint-${{ steps.hash.outputs.sha_short }}/
-        mv extras/intficint/intficint.jar intficint-${{ steps.hash.outputs.sha_short }}/
+        mv sumatra intficint-${{ steps.hash.outputs.sha_short }}/
+        mv *.md intficint-${{ steps.hash.outputs.sha_short }}/
+        mv saves intficint-${{ steps.hash.outputs.sha_short }}/
+        mv example.sumatra intficint-${{ steps.hash.outputs.sha_short }}/
+        mv intficint.jar intficint-${{ steps.hash.outputs.sha_short }}/
     - uses: montudor/action-zip@v1
       with:
         args: zip -qq -r ./intficint-${{ steps.hash.outputs.sha_short }}.zip ./intficint-${{ steps.hash.outputs.sha_short }}

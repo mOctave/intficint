@@ -25,7 +25,7 @@ jobs:
         show-progress: false
     - uses: codespell-project/actions-codespell@v2
       with:
-        path: ./extras/intficint/*.md
+        path: *.md
         exclude_file: .codespell_exclude
         ignore_words_file: .codespell_ignored_words
   stylecheck:
@@ -41,4 +41,4 @@ jobs:
       with:
         python-version: '3.10'
     - name: Run style check
-      run: python ./extras/intficint/tests/code_style.py './extras/intficint/src/'
+      run: python ./tests/code_style.py './src/'
