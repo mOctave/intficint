@@ -48,7 +48,7 @@ jobs:
     - uses: montudor/action-zip@v1
       with:
         args: zip -qq -r ./intficint-${{ steps.hash.outputs.sha_short }}.zip ./intficint-${{ steps.hash.outputs.sha_short }}
-    - uses: dev-drprasad/delete-tag-and-release@v1.0
+    - uses: dev-drprasad/delete-tag-and-release@v1.1
       with:
         tag_name: continuous
         github_token: ${{ secrets.PAT_2024 }}
